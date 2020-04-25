@@ -103,9 +103,9 @@
             console.log(shopify);
         }
            
-        var count = 1;
+        var count = 1; var varients = []; var varientDetails = [];
         function getVarients(){
-            var varients = [];
+           
             for (i = 0; i < idNumber; i++) {
                 var tempStorage = {};
                 tempStorage.type = document.getElementById('type' + (i + 1)).value;
@@ -116,8 +116,8 @@
             return varients;
         }
         function getVarientDetails() {
-             var varientDetails = [];
-             varients = getVarients();
+             
+             
              var tempNum = 1;
                 for (var i = 0; i < varients.length; i++) {
                     tempNum = tempNum * varients[i].values.length;
