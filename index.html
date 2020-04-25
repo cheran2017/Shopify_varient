@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<style type="text/css">
+    #varients , #submit{
+        display: none;
+    }
+    #output {
+        color:green;font-size: 16px;font-weight: bold;
+    }
+</style>
+<body>
+    <div class="container-fluid">
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <form action="" class="form-group" onsubmit="jsonPreview();return false;">
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label" for="product_name">Product Name</label>
+                         <div class="col-sm-6">
+                            <input class="form-control" type="text" name="product_name" id="product_name" placeholder="Enter Product Name">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label" for="base_price">Base Price</label>
+                         <div class="col-sm-6">
+                            <input class="input form-control" type="text" name="base_price" id="price" placeholder="Enter Price">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label" for="description">Description</label>
+                         <div class="col-sm-6">
+                            <input class="form-control" type="text" name="description" id="description" placeholder="Enter Description">
+                         </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label" for="click here to add varient">click here to add varient</label>
+                        <input class="btn btn-warning" type="button" onclick="addVarient()" id="addvar"
+                            value="Click here to Add Varient">
+                    </div>
+                    <div class="form-group row">
+                        <div class="row">
+                            <div class="col-md-12"  id='varients'>
+                            </div>
+                        </div>
+                       
+                    </div>
+                    <div id='varientdetails'></div>
+                    <br>
+                    <input type="submit" value="output" class="btn btn-primary form-control" id='submit'>
+                </form>
+            </div>
+            <div class="col-md-6">
+               <div class="row">
+                   <div class="col-md-12">
+                        <pre id="output"></pre>
+                   </div>
+               </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function inputSchema(id,placeholder) {
+            var input   = document.createElement('input');
+            input.id = id;
+            input.placeholder = placeholder;
+            return input;
+        }
+        var idNumber = 0; var shopify = {};
+        function addVarient() { 
+            idNumber += 1;
+            var varientDiv = document.getElementById('varients');
+            var input   = inputSchema('type' + idNumber,'Enter Varient type ' + idNumber);
+            var inp2    = inputSchema('value' + idNumber,'Enter Varient values of varient type ' + idNumber);
+            var button    = document.createElement('button');
+            button.innerHTML   = 'click here to add on price';
+            button.className   = 'btn btn-success';
+            button.type        = 'button';
+            button.id           = 'addon'+idNumber;
+            varientDiv.appendChild(input);
+            varientDiv.appendChild(inp2);
+            varientDiv.appendChild(button);
+            varientDiv.style.display = 'block';
+            varientDiv.appendChild(document.createElement('br'));
+            console.log("========>"+'addon' + (idNumber -1));
+            var element = document.getElementById('addon' + (idNumber -1));
+            if (typeof(element) != 'undefined' && element != null) {
+                element.remove();
+             }
+            document.getElementById(button.id).onclick = createVarDetails;
+            shopify.name        = document.getElementById('product_name').value;
+            shopify.price       = parseInt(document.getElementById('price').value);
+            shopify.description = document.getElementById('description').value;
+        }
+        function jsonPreview() {
+            document.getElementById("output").innerHTML = '';
+            document.getElementById("output").append(JSON.stringify(shopify, null, '\t'));
+            console.log(shopify);
+        }
+           
+        var count = 1;
+        function getVarients(){
+            var varients = [];
+            for (i = 0; i < idNumber; i++) {
+                var tempStorage = {};
+                tempStorage.type = document.getElementById('type' + (i + 1)).value;
+                tempStorage.values = document.getElementById('value' + (i + 1)).value.split(',');
+                count = count * tempStorage.values.length;
+                varients.push(tempStorage);
+            }
+            return varients;
+        }
+        function getVarientDetails() {
+             var varientDetails = [];
+             varients = getVarients();
+             var tempNum = 1;
+                for (var i = 0; i < varients.length; i++) {
+                    tempNum = tempNum * varients[i].values.length;
+                    var p = 0;
+                    for (var k = 0; k < count; k++) {
+                        if (k % (count / tempNum) == 0) {
+                            p = p + 1;
+                            if (p == varients[i].values.length) {
+                                p = 0;
+                            }
+                        }
+                        if (varientDetails[k] === undefined) {
+                            var tempStorage = {};
+                            tempStorage[varients[i].type] = varients[i].values[p];
+                            varientDetails.push(tempStorage);
+                        } else {
+                            varientDetails[k][varients[i].type] = varients[i].values[p];
+                        }
+                    }
+                }
+                return varientDetails;
+        }
+        function createVarDetails() {
+            
+            shopify.varients = getVarients();
+            console.log(shopify.varients);
+            shopify.varientDetails = getVarientDetails();
+            console.log(shopify.varientDetails);
+            document.getElementById('varientdetails').remove();
+            var newDiv = document.createElement('div');
+            newDiv.id = 'varientdetails';
+            var key = Object.keys(shopify.varientDetails[0]);
+            for (var i = 0; i < count; i++) {
+                var inDiv = document.createElement('div');
+                var lab = document.createElement('label');
+                lab.setAttribute('for', 'val' + (i + 1));
+                var inp1 = document.createElement('input');
+                inp1.name = 'val' + (i + 1);
+                inp1.id = 'val' + (i + 1);
+                inp1.placeholder = 'Enter Add on price';
+                for (var w = 0; w < key.length; w++) {
+                    if (w == 0) {
+                        lab.innerHTML = 'Enter add on for  ' +shopify.varientDetails[i][key[w]]+ '  ';
+                    } else {
+                        lab.innerHTML = 'Enter add on for  ' +lab.innerHTML + '/' + shopify.varientDetails[i][key[w]]+ '  ';
+                    }
+                }
+                lab.className   = 'col-sm-6 col-form-label';
+                inp1.className  = 'col-sm-6';
+                inDiv.className = 'form-group row';
+                inDiv.appendChild(lab);
+                inDiv.appendChild(inp1);
+                newDiv.appendChild(inDiv);
+            }
+            var addOnButton = addOnButtonSchema();
+            addOnButton.setAttribute('onclick', 'addOnPrice()');
+            newDiv.appendChild(addOnButton);
+            newDiv.appendChild(document.createElement('br'));
+            document.getElementById('submit').parentNode.insertBefore(newDiv, document.getElementById('submit'));
+        }
+
+        function addOnButtonSchema() {
+            var addOnButton = document.createElement('input');
+            addOnButton.type = 'button';
+            addOnButton.className = 'btn btn-primary';
+            addOnButton.value = 'Set add on price';
+            return addOnButton;
+        }
+
+        function addOnPrice() {
+            for (var i = 0; i < shopify.varientDetails.length; i++) {
+                temprice = document.getElementById('val' + (i + 1)).value;
+                shopify.varientDetails[i].addOnPrice = parseInt(temprice);
+            }
+            jsonPreview()
+        }        
+    </script>
+</body>
+
+</html>
